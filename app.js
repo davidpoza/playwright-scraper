@@ -1,17 +1,19 @@
 const playwright = require('playwright');
 const fs = require('fs');
 
+let browser;
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-async function main(retry = 0) {
-	if (retry === 5) return;
+async function main() {
 	try {
 	console.log("launching browser");
-		const browser = await playwright.chromium.launch({
+	  browser = await playwright.chromium.launch({
 			headless: false,
 		});
   const page = await browser.newPage();
-  await page.goto('https://www.prozis.com/es/es/prozis/100-real-whey-protein-2000g', { waitUntil: 'networkidle'  });
-	const price = await page.$$eval('#ob-product-price', (element) => {
+  // await page.goto('https://www.prozis.com/es/es/prozis/100-real-whey-protein-2000g', { waitUntil: 'networkidle'  });
+	await page.goto('https://www.prozis.com/es/es/prozis/100-real-whey-protein-2000g');
+	await page.waitForTimeout(4000); // this page gets the content via ajax
+  const price = await page.$$eval('#ob-product-price', (element) => {
 		return element[0].innerText;
 	});
   console.log(price);
@@ -24,8 +26,6 @@ async function main(retry = 0) {
 	} catch (err) {
 		console.log(err)
 	  await browser.close();
-		await delay(10000);
-		return main(retry++);
 	}
 }
 
